@@ -6,8 +6,7 @@ const port = new SerialPort({
     baudRate: 115200,
 });
 
-port.setEncoding("ascii");
-port.on("data", console.log);
+port.setEncoding("binary");
 const rpc = new RpcHandle(port);
 
 rpc.send({
@@ -27,10 +26,12 @@ rpc.send({
     }
 });
 
-setInterval(() => {
+setInterval(async () => {
     rpc.send({
         get_position: {
             channel: 3
         }
     });
+
+    console.log(await rpc.recv());
 }, 100);

@@ -36,13 +36,50 @@ export type OutgoingRpcPacket = {
 
 export class RpcHandle {
     protected port: Readable & Writable;
+    protected incoming: IncomingRpcPacket[] = [];
+    protected incomingResolver: ((packet: IncomingRpcPacket) => void)[] = [];
 
     constructor(port: Readable & Writable) {
         this.port = port;
+        let buf = Buffer.alloc(0);
+
+        port.on("data", (data: Buffer) => {
+            // Concatenate new data onto existing buffer
+            buf = Buffer.concat([buf, data]);
+
+            let len = buf.readUint8();
+            while (buf.length > len) {
+                // Extract the json
+                let str = buf.toString("ascii", 1, len + 1);
+                // Cleanup the buffer & prepare for next iteration0
+                buf = buf.subarray(len + 1);
+                if (buf.length === 0) {
+                    break;
+                }
+                len = buf.readUint8();
+
+                // Emit the content
+                if (this.incomingResolver.length > 0) {
+                    this.incomingResolver.shift()(JSON.parse(str));
+                } else {
+                    this.incoming.push(JSON.parse(str))
+                }
+            }
+        });
     }
 
     send(packet: OutgoingRpcPacket) {
         this.port.write(serializeRpcPacket(packet));
+    }
+
+    async recv(): Promise<IncomingRpcPacket> {
+        if (this.incoming.length > 0) {
+            return this.incoming.shift()
+        } else {
+            return await new Promise((res) => {
+                this.incomingResolver.push(res);
+            });
+        }
     }
 }
 
