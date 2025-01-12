@@ -51,19 +51,18 @@ export class RpcHandle {
             while (buf.length > len) {
                 // Extract the json
                 let str = buf.toString("ascii", 1, len + 1);
-                // Cleanup the buffer & prepare for next iteration0
-                buf = buf.subarray(len + 1);
-                if (buf.length === 0) {
-                    break;
-                }
-                len = buf.readUint8();
-
                 // Emit the content
                 if (this.incomingResolver.length > 0) {
                     this.incomingResolver.shift()(JSON.parse(str));
                 } else {
                     this.incoming.push(JSON.parse(str))
                 }
+                // Cleanup the buffer & prepare for next iteration0
+                buf = buf.subarray(len + 1);
+                if (buf.length === 0) {
+                    break;
+                }
+                len = buf.readUint8();
             }
         });
     }
