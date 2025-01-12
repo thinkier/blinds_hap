@@ -6,7 +6,6 @@ const port = new SerialPort({
     baudRate: 115200,
 });
 
-port.setEncoding("binary");
 const rpc = new RpcHandle(port);
 
 rpc.send({
