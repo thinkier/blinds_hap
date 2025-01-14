@@ -69,6 +69,13 @@ export class RpcHandle {
     subscribe(callback: (packet: IncomingRpcPacket) => void) {
         this.subscribers.push(callback);
     }
+
+    unsubscribe(callback: (packet: IncomingRpcPacket) => void) {
+        let idx = this.subscribers.indexOf(callback);
+        if (idx !== -1) {
+            this.subscribers.splice(idx, 1);
+        }
+    }
 }
 
 const serializeRpcPacket = (packet: OutgoingRpcPacket): Buffer => {
