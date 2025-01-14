@@ -3,9 +3,12 @@ import {Readable, Writable} from "node:stream";
 
 export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
 
+export interface ChannelBoundRpcPacket {
+    channel: number
+}
+
 export type IncomingRpcPacket = {
-    position: {
-        channel: number,
+    position: ChannelBoundRpcPacket & {
         state: {
             position: number,
             tilt: number
@@ -14,12 +17,9 @@ export type IncomingRpcPacket = {
 }
 
 export type OutgoingRpcPacket = {
-    home: {
-        channel: number
-    }
+    home: ChannelBoundRpcPacket
 } | {
-    setup: {
-        channel: number,
+    setup: ChannelBoundRpcPacket & {
         init: {
             position: number,
             tilt: number
@@ -29,15 +29,12 @@ export type OutgoingRpcPacket = {
         full_tilt_steps?: number
     }
 } | {
-    get_position: {
-        channel: number
-    }
+    get_position: ChannelBoundRpcPacket
 };
 
 export class RpcHandle {
     protected port: Readable & Writable;
-    protected incoming: IncomingRpcPacket[] = [];
-    protected incomingResolver: ((packet: IncomingRpcPacket) => void)[] = [];
+    protected subscribers: ((packet: IncomingRpcPacket) => void)[] = [];
 
     constructor(port: Readable & Writable) {
         this.port = port;
@@ -52,10 +49,8 @@ export class RpcHandle {
                 // Extract the json
                 let str = buf.toString("ascii", 1, len + 1);
                 // Emit the content
-                if (this.incomingResolver.length > 0) {
-                    this.incomingResolver.shift()(JSON.parse(str));
-                } else {
-                    this.incoming.push(JSON.parse(str))
+                for (let sub of this.subscribers) {
+                    sub(JSON.parse(str))
                 }
                 // Cleanup the buffer & prepare for next iteration0
                 buf = buf.subarray(len + 1);
@@ -71,14 +66,8 @@ export class RpcHandle {
         this.port.write(serializeRpcPacket(packet));
     }
 
-    async recv(): Promise<IncomingRpcPacket> {
-        if (this.incoming.length > 0) {
-            return this.incoming.shift()
-        } else {
-            return await new Promise((res) => {
-                this.incomingResolver.push(res);
-            });
-        }
+    subscribe(callback: (packet: IncomingRpcPacket) => void) {
+        this.subscribers.push(callback);
     }
 }
 

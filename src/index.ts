@@ -8,6 +8,8 @@ const port = new SerialPort({
 
 const rpc = new RpcHandle(port);
 
+rpc.subscribe(console.log);
+
 rpc.send({
     setup: {
         channel: 3,
@@ -31,6 +33,4 @@ setInterval(async () => {
             channel: 3
         }
     });
-
-    console.log(await rpc.recv());
 }, 100);
