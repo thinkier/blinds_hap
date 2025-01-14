@@ -1,35 +1,24 @@
 import {Readable, Writable} from "node:stream";
+import {ChannelBound, WindowDressingState} from "./model/common";
+import {WindowDressingInstanceConfig} from "./model/config";
 
 
 export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
 
-export interface ChannelBoundRpcPacket {
-    channel: number
-}
-
 export type IncomingRpcPacket = {
-    position: ChannelBoundRpcPacket & {
-        state: {
-            position: number,
-            tilt: number
-        }
+    position: ChannelBound & {
+        state: WindowDressingState
     }
 }
 
 export type OutgoingRpcPacket = {
-    home: ChannelBoundRpcPacket
+    home: ChannelBound
 } | {
-    setup: ChannelBoundRpcPacket & {
-        init: {
-            position: number,
-            tilt: number
-        }
-        full_cycle_steps: number,
-        reverse?: boolean,
-        full_tilt_steps?: number
+    setup: ChannelBound & WindowDressingInstanceConfig & {
+        init: WindowDressingState
     }
 } | {
-    get_position: ChannelBoundRpcPacket
+    get_position: ChannelBound
 };
 
 export class RpcHandle {
