@@ -3,13 +3,15 @@ import * as fs from "node:fs";
 import {ChannelBound} from "./common";
 
 export type WindowDressingInstanceConfig = ChannelBound & {
+    uuid: string,
     full_cycle_steps: number,
     reverse?: boolean,
-    full_tilt_steps?: number
+    full_tilt_steps?: number,
+    stallguard_threshold?: number
 }
 
 export interface ConfigFile {
-    instances: WindowDressingInstanceConfig
+    instances: WindowDressingInstanceConfig[]
 }
 
 export function readConfig(path = "config.yml"): ConfigFile {

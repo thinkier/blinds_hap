@@ -1,6 +1,6 @@
 import {Readable, Writable} from "node:stream";
-import {ChannelBound, WindowDressingState} from "./model/common";
-import {WindowDressingInstanceConfig} from "./model/config";
+import {ChannelBound, WindowDressingState} from "./common";
+import {WindowDressingInstanceConfig} from "./config";
 
 
 export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
@@ -51,8 +51,16 @@ export class RpcHandle {
         });
     }
 
-    send(packet: OutgoingRpcPacket) {
-        this.port.write(serializeRpcPacket(packet));
+    async send(packet: OutgoingRpcPacket): Promise<void> {
+        new Promise((res, rej) => {
+            this.port.write(serializeRpcPacket(packet), (err) => {
+                if (err) {
+                    rej(err)
+                } else {
+                    res(undefined);
+                }
+            });
+        })
     }
 
     subscribe(callback: (packet: IncomingRpcPacket) => void) {

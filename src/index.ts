@@ -1,5 +1,5 @@
 import {SerialPort} from "serialport";
-import {RpcHandle} from "./rpc";
+import {RpcHandle} from "./model/rpc";
 
 const port = new SerialPort({
     path: "/dev/serial0",
