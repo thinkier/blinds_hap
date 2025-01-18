@@ -18,5 +18,5 @@ export function getHapHostName(fullName: boolean = false) {
 }
 
 export const createBridge = (hk: HomeKitConfigFile) => {
-    return new Bridge(getHapHostName(), hk.bridge_uuid);
+    return new Bridge(getHapHostName(true), hk.bridge_uuid);
 }
