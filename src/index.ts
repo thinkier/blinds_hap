@@ -13,8 +13,6 @@ const rpc = new RpcHandle(port);
 const accessories = readAccessories();
 const hk = readHomeKit();
 
-rpc.subscribe(console.log);
-
 const main = async () => {
     for (let instance of accessories.instances) {
         let acc = await new WindowDressing(instance, rpc)
