@@ -70,7 +70,7 @@ export class WindowDressing {
                     console.error(e);
                 }
             }
-            cb(null, false);
+            cb();
         });
 
         this.accessory.addService(resetButton);
@@ -95,7 +95,7 @@ export class WindowDressing {
                 } catch (e) {
                     console.error(e);
                 }
-                cb(null, value);
+                cb();
             });
             let posState = windowCovering.getCharacteristic(Characteristic.PositionState)!;
             posState.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
@@ -128,7 +128,7 @@ export class WindowDressing {
                 } catch (e) {
                     console.error(e);
                 }
-                cb(null, value);
+                cb();
             });
         }
 
