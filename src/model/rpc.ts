@@ -6,8 +6,7 @@ export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
 
 export type IncomingRpcPacket = {
     position: ChannelBound & {
-        state: WindowDressingState,
-        vector: "extend" | "retract" | "hold"
+        state: WindowDressingState
     }
 }
 
