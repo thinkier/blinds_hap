@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start.dev": "DEBUG=HAP-NodeJS:* ts-node --project tsconfig.json src/index.ts",
+    "start.dev": "DEBUG=HAP-NodeJS:*,BlindsHAP:* ts-node --project tsconfig.json src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc -p . --outDir dist --inlineSourceMap",
     "clean": "rm -rf node_modules dist persist"
@@ -13,12 +13,14 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/debug": "^4.1.12",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "debug": "^4.4.0",
     "hap-nodejs": "^1.1.0",
     "js-yaml": "^4.1.0",
     "serialport": "^13.0.0"
