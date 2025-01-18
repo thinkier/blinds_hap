@@ -7,21 +7,10 @@ import {
     CharacteristicSetCallback, CharacteristicValue,
     Service
 } from "hap-nodejs";
-import * as os from "node:os";
 import {WindowDressingState} from "../model/common";
 import {IncomingRpcPacket} from "../model/rpc";
 import {RpcHandle} from "../comms/rpc";
-
-function getName() {
-    let name = os.hostname()
-        .replace(/-bridge$/, "")
-        .replace(/[_-]+/, ' ');
-
-    let frags = name.split(' ')
-        .map(frag => frag.length > 0 ? `${frag.charAt(0).toUpperCase()}${frag.slice(1)}` : frag)
-
-    return frags.join(' ');
-}
+import {getHapHostName} from "./bridge";
 
 export class WindowDressing {
     protected readonly accessory: Accessory;
@@ -30,7 +19,7 @@ export class WindowDressing {
     protected shadowDesiredState: WindowDressingState;
 
     public constructor(cfg: WindowDressingInstanceConfig, rpc: RpcHandle, init?: WindowDressingState) {
-        this.accessory = new Accessory(`${getName()} ${cfg.channel}`, cfg.uuid);
+        this.accessory = new Accessory(`${getHapHostName()} ${cfg.channel}`, cfg.uuid);
         this.cfg = cfg;
         this.rpc = rpc;
         // Default to fully open
