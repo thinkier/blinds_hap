@@ -40,8 +40,11 @@ export class WindowDressing {
     public async setup(): Promise<Accessory> {
         await this.rpc.send({
             "setup": {
+                channel: this.cfg.channel,
                 init: this.shadowDesiredState,
-                ...this.cfg
+                full_cycle_steps: this.cfg.full_cycle_steps,
+                reverse: this.cfg.reverse,
+                full_tilt_steps: this.cfg.full_tilt_steps,
             }
         });
         this.addCovering();
