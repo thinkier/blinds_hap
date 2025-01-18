@@ -1,12 +1,9 @@
 import jsyaml from "js-yaml"
 import * as fs from "node:fs";
-import {ChannelBound} from "./common";
+import {ChannelBound, WindowDressingInstance} from "./common";
 
-export type WindowDressingInstanceConfig = ChannelBound & {
+export type WindowDressingInstanceConfig = ChannelBound & WindowDressingInstance & {
     uuid: string,
-    full_cycle_steps: number,
-    reverse?: boolean,
-    full_tilt_steps?: number,
     stallguard_threshold?: number
 }
 
