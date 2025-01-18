@@ -5,10 +5,10 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start.dev": "ts-node --project tsconfig.json src/index.ts",
+    "start.dev": "DEBUG=HAP-NodeJS:* ts-node --project tsconfig.json src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc -p . --outDir dist --inlineSourceMap",
-    "clean": "rm -rf node_modules dist"
+    "clean": "rm -rf node_modules dist persist"
   },
   "author": "",
   "license": "MIT",

@@ -1,4 +1,4 @@
-import {WindowDressingInstanceConfig} from "./config";
+import {WindowDressingInstanceConfig} from "../config/accessories";
 import {
     Accessory,
     Characteristic,
@@ -8,8 +8,20 @@ import {
     Service
 } from "hap-nodejs";
 import * as os from "node:os";
-import {IncomingRpcPacket, RpcHandle} from "./rpc";
-import {WindowDressingState} from "./common";
+import {WindowDressingState} from "../model/common";
+import {IncomingRpcPacket} from "../model/rpc";
+import {RpcHandle} from "../comms/rpc";
+
+function getName() {
+    let name = os.hostname()
+        .replace(/-bridge$/, "")
+        .replace(/[_-]+/, ' ');
+
+    let frags = name.split(' ')
+        .map(frag => frag.length > 0 ? `${frag.charAt(0).toUpperCase()}${frag.slice(1)}` : frag)
+
+    return frags.join(' ');
+}
 
 export class WindowDressing {
     protected readonly accessory: Accessory;
@@ -17,15 +29,15 @@ export class WindowDressing {
     protected readonly rpc: RpcHandle;
     protected shadowDesiredState: WindowDressingState;
 
-    constructor(cfg: WindowDressingInstanceConfig, rpc: RpcHandle, init?: WindowDressingState) {
-        this.accessory = new Accessory(`${os.hostname().replace(/-bridge$/, "")}-${cfg.channel}`, cfg.uuid);
+    public constructor(cfg: WindowDressingInstanceConfig, rpc: RpcHandle, init?: WindowDressingState) {
+        this.accessory = new Accessory(`${getName()} ${cfg.channel}`, cfg.uuid);
         this.cfg = cfg;
         this.rpc = rpc;
         // Default to fully open
         this.shadowDesiredState = init ?? {position: 100, tilt: 0};
     }
 
-    protected async setup(): Promise<Accessory> {
+    public async setup(): Promise<Accessory> {
         await this.rpc.send({
             "setup": {
                 init: this.shadowDesiredState,
@@ -43,7 +55,7 @@ export class WindowDressing {
     protected addHomingButton() {
         let resetButton = new Service.Switch(`Reset ${this.cfg.channel}`);
 
-        let state = resetButton.addCharacteristic(Characteristic.On)!;
+        let state = resetButton.getCharacteristic(Characteristic.On)!;
         state.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
             cb(null, false);
         });
@@ -64,13 +76,13 @@ export class WindowDressing {
     protected addCovering() {
         let windowCovering = new Service.WindowCovering(`Blinds ${this.cfg.channel}`);
         {
-            let curPos = windowCovering.addCharacteristic(Characteristic.CurrentPosition)!;
+            let curPos = windowCovering.getCharacteristic(Characteristic.CurrentPosition)!;
             curPos.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
                 this.getCurrentState().then((state) => {
                     cb(null, state.position);
                 });
             });
-            let targetPos = windowCovering.addCharacteristic(Characteristic.TargetPosition)!;
+            let targetPos = windowCovering.getCharacteristic(Characteristic.TargetPosition)!;
             targetPos.on(CharacteristicEventTypes.GET, async (cb: CharacteristicGetCallback) => {
                 cb(null, this.shadowDesiredState.position);
             });
@@ -82,7 +94,7 @@ export class WindowDressing {
                 }
                 cb(null, value);
             });
-            let posState = windowCovering.addCharacteristic(Characteristic.PositionState)!;
+            let posState = windowCovering.getCharacteristic(Characteristic.PositionState)!;
             posState.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
                 this.getCurrentState().then(curState => {
                     if (curState.position > this.shadowDesiredState.position) {

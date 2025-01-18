@@ -1,5 +1,8 @@
 import {SerialPort} from "serialport";
-import {RpcHandle} from "./model/rpc";
+import {RpcHandle} from "./comms/rpc";
+import {readHomeKit} from "./config/homekit";
+import {WindowDressing} from "./integration/window_dressing";
+import {readAccessories} from "./config/accessories";
 
 const port = new SerialPort({
     path: "/dev/serial0",
@@ -7,30 +10,17 @@ const port = new SerialPort({
 });
 
 const rpc = new RpcHandle(port);
+const accessories = readAccessories();
+const hk = readHomeKit();
 
 rpc.subscribe(console.log);
 
-rpc.send({
-    setup: {
-        channel: 3,
-        init: {
-            position: 0,
-            tilt: 90
-        },
-        full_cycle_steps: 100000,
+const main = async () => {
+    for (let instance of accessories.instances) {
+        let acc = await new WindowDressing(instance, rpc)
+            .setup();
+        await acc.publish({...hk});
     }
-});
 
-rpc.send({
-    home: {
-        channel: 3
-    }
-});
-
-setInterval(async () => {
-    rpc.send({
-        get_position: {
-            channel: 3
-        }
-    });
-}, 100);
+}
+main();

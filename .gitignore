@@ -131,4 +131,6 @@ dist
 
 .idea/
 *.iml
-persistence.yml
+config/homekit.yml
+config/persistence.yml
+persist/
