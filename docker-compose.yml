@@ -1,0 +1,10 @@
+services:
+  blinds_hap:
+    image: ghcr.io/thinkier/blinds_hap
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config:/app/config
+      - ./persist:/app/persist
+    devices:
+      - /dev/serial0:/dev/serial0
