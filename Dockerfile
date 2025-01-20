@@ -4,6 +4,7 @@ COPY package-lock.json package.json ./
 
 FROM base as builder
 RUN npm install
+COPY . .
 RUN npm run build
 
 FROM base as runner
