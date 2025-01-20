@@ -1,12 +1,10 @@
-import {ChannelBound, WindowDressingInstance, WindowDressingState} from "./common";
+import {ChannelBound, WindowDressingInstance, WindowDressingState, WindowDressingStatePair} from "./common";
 
 
 export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
 
 export type IncomingRpcPacket = {
-    position: ChannelBound & {
-        state: WindowDressingState
-    },
+    position: ChannelBound & WindowDressingStatePair,
     ready: {}
 }
 

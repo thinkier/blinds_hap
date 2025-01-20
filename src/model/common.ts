@@ -3,6 +3,11 @@ export interface WindowDressingState {
     tilt: number
 }
 
+export interface WindowDressingStatePair {
+    current: WindowDressingState,
+    desired: WindowDressingState
+}
+
 export interface WindowDressingInstance {
     full_cycle_steps: number,
     reverse?: boolean,
