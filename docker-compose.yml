@@ -7,4 +7,8 @@ services:
       - ./config:/app/config
       - ./persist:/app/persist
     devices:
-      - /dev/serial0:/dev/serial0
+      - /dev/gpiomem
+      - /dev/serial0
+    environment:
+      TERM: xterm-256color
+      DEBUG: BlindsHAP:*
