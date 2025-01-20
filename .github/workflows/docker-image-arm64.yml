@@ -11,8 +11,7 @@ on:
 
 jobs:
   build:
-#    runs-on: ubuntu-24.04-arm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     steps:
     - uses: actions/checkout@v4
     - name: Login to GitHub Container Registry
@@ -26,5 +25,3 @@ jobs:
       with:
         push: true
         tags: ghcr.io/${{ github.repository }}:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
