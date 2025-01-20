@@ -66,4 +66,9 @@ export class RpcHandle {
             this.subscribers.splice(idx, 1);
         }
     }
+
+    reset() {
+        require("debug")("BlindsHAP:Session")("Attempting to reset the target device");
+        this.port.write(Buffer.from([0]));
+    }
 }

@@ -147,12 +147,17 @@ export class WindowDressing {
     }
 
     private async getCurrentState(): Promise<WindowDressingState> {
+        let timeout = setTimeout(()=>{
+            this.rpc.reset();
+        }, 5000);
+
         let handler = new Promise<WindowDressingState>((res) => {
             const update = (packet: IncomingRpcPacket) => {
                 if ("position" in packet && packet.position.channel === this.cfg.channel) {
                     res(packet.position.state);
                 }
 
+                clearTimeout(timeout);
                 this.rpc.unsubscribe(update);
             }
 

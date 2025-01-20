@@ -6,7 +6,8 @@ export type RpcPacket = IncomingRpcPacket | OutgoingRpcPacket;
 export type IncomingRpcPacket = {
     position: ChannelBound & {
         state: WindowDressingState
-    }
+    },
+    ready: {}
 }
 
 export type OutgoingRpcPacket = {
