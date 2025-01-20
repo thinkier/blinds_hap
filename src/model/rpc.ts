@@ -15,9 +15,10 @@ export type OutgoingRpcPacket = {
         init: WindowDressingState
     }
 } | {
-    set_position: ChannelBound & {
-        state: WindowDressingState
+    set: ChannelBound & {
+        position?: number,
+        tilt?: number
     }
 } | {
-    get_position: ChannelBound
+    get: ChannelBound
 };

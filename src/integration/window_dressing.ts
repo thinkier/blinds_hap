@@ -128,26 +128,20 @@ export class WindowDressing {
         this.accessory.addService(windowCovering);
     }
 
-    private async setPosition(value: number) {
-        let state = await this.getState().then(state => state.desired);
-        state.position = value;
-
+    private async setPosition(position: number) {
         await this.rpc.send({
-            set_position: {
+            set: {
                 channel: this.cfg.channel,
-                state
+                position
             }
         })
     }
 
-    private async setTilt(value: number) {
-        let state = await this.getState().then(state => state.desired);
-        state.tilt = value;
-
+    private async setTilt(tilt: number) {
         await this.rpc.send({
-            set_position: {
+            set: {
                 channel: this.cfg.channel,
-                state
+                tilt
             }
         })
     }
@@ -174,7 +168,7 @@ export class WindowDressing {
             this.rpc.subscribe(update);
         })
 
-        await this.rpc.send({get_position: {channel: this.cfg.channel}});
+        await this.rpc.send({get: {channel: this.cfg.channel}});
         return await handler;
     }
 }
