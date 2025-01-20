@@ -10,4 +10,4 @@ RUN npm run build
 FROM base as runner
 RUN npm install --omit dev
 COPY --from=builder /app/dist ./dist
-CMD npm run start
+CMD node dist/index.js
