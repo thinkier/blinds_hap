@@ -16,6 +16,7 @@ export class WindowDressing {
     protected readonly accessory: Accessory;
     protected readonly cfg: WindowDressingInstanceConfig;
     protected readonly rpc: RpcHandle;
+    protected position: WindowDressingStatePair;
 
     public constructor(cfg: WindowDressingInstanceConfig, rpc: RpcHandle, init?: WindowDressingState) {
         this.accessory = new Accessory(`${getHapHostName()} ${cfg.channel}`, cfg.uuid);
@@ -34,12 +35,27 @@ export class WindowDressing {
                 }
             });
         };
+        setup();
+
+        let pendingPackets = 0;
+        setInterval(() => {
+            if (pendingPackets++ > 5) {
+                this.rpc.reset();
+            }
+            this.rpc.send({
+                "get": {
+                    channel: this.cfg.channel
+                }
+            });
+        }, 2000);
         this.rpc.subscribe(incoming => {
             if ("ready" in incoming) {
                 setup();
+            } else if ("position" in incoming && incoming.position.channel === this.cfg.channel) {
+                pendingPackets--;
+                this.position = incoming.position;
             }
         });
-        setup();
     }
 
     public setup(): Accessory {
@@ -76,19 +92,11 @@ export class WindowDressing {
         {
             let curPos = windowCovering.getCharacteristic(Characteristic.CurrentPosition)!;
             curPos.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
-                this.getState()
-                    .then(state => state.current)
-                    .then((state) => {
-                        cb(null, state.position);
-                    });
+                cb(null, this.position.current.position);
             });
             let targetPos = windowCovering.getCharacteristic(Characteristic.TargetPosition)!;
             targetPos.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
-                this.getState()
-                    .then(state => state.desired)
-                    .then((state) => {
-                        cb(null, state.position);
-                    });
+                cb(null, this.position.desired.position);
             });
             targetPos.on(CharacteristicEventTypes.SET, (value: CharacteristicValue, cb: CharacteristicSetCallback) => {
                 this.setPosition(value as number)
@@ -97,36 +105,27 @@ export class WindowDressing {
             });
             let posState = windowCovering.getCharacteristic(Characteristic.PositionState)!;
             posState.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
-                this.getState()
-                    .then(({current, desired}) => {
-                        if (current.position > desired.position) {
-                            cb(null, Characteristic.PositionState.DECREASING);
-                        } else if (current.position < desired.position) {
-                            cb(null, Characteristic.PositionState.INCREASING);
-                        } else {
-                            cb(null, Characteristic.PositionState.STOPPED);
-                        }
-                    });
+                let {current, desired} = this.position;
+
+                if (current.position > desired.position) {
+                    cb(null, Characteristic.PositionState.DECREASING);
+                } else if (current.position < desired.position) {
+                    cb(null, Characteristic.PositionState.INCREASING);
+                } else {
+                    cb(null, Characteristic.PositionState.STOPPED);
+                }
             });
         }
 
         if (this.cfg.full_tilt_steps !== undefined) {
             let curTilt = windowCovering.addCharacteristic(Characteristic.CurrentHorizontalTiltAngle)!;
             curTilt.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
-                this.getState()
-                    .then(state => state.current)
-                    .then(state => {
-                        cb(null, state.tilt);
-                    });
+                cb(null, this.position.current.tilt);
+
             });
             let targetTilt = windowCovering.addCharacteristic(Characteristic.TargetHorizontalTiltAngle)!;
             targetTilt.on(CharacteristicEventTypes.GET, (cb: CharacteristicGetCallback) => {
-                this.getState()
-                    .then(state => state.current)
-                    .then(state => {
-                        cb(null, state.tilt);
-                    })
-                    .catch(err => cb(err));
+                cb(null, this.position.desired.tilt);
             });
             targetTilt.on(CharacteristicEventTypes.SET, (value: CharacteristicValue, cb: CharacteristicSetCallback) => {
                 this.setTilt(value as number)
@@ -180,37 +179,5 @@ export class WindowDressing {
             }, 50);
             this.setTiltCursor = [timeout, res];
         });
-    }
-
-    private stateRequested: boolean = false;
-
-    private async getState(): Promise<WindowDressingStatePair> {
-        let handler = new Promise<WindowDressingStatePair>((res, rej) => {
-            let timeout = setTimeout(() => {
-                this.rpc.reset();
-                rej(new Error("Timeout detected"));
-            }, 5000);
-
-            const update = (packet: IncomingRpcPacket) => {
-                if ("position" in packet && packet.position.channel === this.cfg.channel) {
-                    this.stateRequested = false;
-                    res({
-                        current: packet.position.current,
-                        desired: packet.position.desired
-                    });
-                }
-
-                clearTimeout(timeout);
-                this.rpc.unsubscribe(update);
-            }
-
-            this.rpc.subscribe(update);
-        })
-
-        if (!this.stateRequested) {
-            this.stateRequested = true;
-            await this.rpc.send({get: {channel: this.cfg.channel}});
-        }
-        return await handler;
     }
 }
