@@ -63,6 +63,8 @@ export class WindowDressing {
                 this.rpc.send({"home": {channel: this.cfg.channel}})
                     .then(() => cb())
                     .catch(err => cb(err));
+            } else {
+                cb();
             }
         });
 
