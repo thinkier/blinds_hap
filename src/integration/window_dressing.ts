@@ -22,16 +22,24 @@ export class WindowDressing {
         this.cfg = cfg;
         this.rpc = rpc;
 
-        this.rpc.send({
-            "setup": {
-                channel: this.cfg.channel,
-                // Default to fully open
-                init: init ?? {position: 100, tilt: 0},
-                full_cycle_steps: this.cfg.full_cycle_steps,
-                reverse: this.cfg.reverse,
-                full_tilt_steps: this.cfg.full_tilt_steps,
+        const setup = () => {
+            this.rpc.send({
+                "setup": {
+                    channel: this.cfg.channel,
+                    // Default to fully open
+                    init: init ?? {position: 100, tilt: 0},
+                    full_cycle_steps: this.cfg.full_cycle_steps,
+                    reverse: this.cfg.reverse,
+                    full_tilt_steps: this.cfg.full_tilt_steps,
+                }
+            });
+        };
+        this.rpc.subscribe(incoming => {
+            if ("ready" in incoming) {
+                setup();
             }
         });
+        setup();
     }
 
     public setup(): Accessory {
