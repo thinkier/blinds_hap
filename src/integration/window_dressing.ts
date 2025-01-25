@@ -138,23 +138,51 @@ export class WindowDressing {
         this.accessory.addService(windowCovering);
     }
 
+    private setPositionCursor?: [NodeJS.Timeout, (_: void) => void] = undefined;
+
     private async setPosition(position: number) {
-        await this.rpc.send({
-            set: {
-                channel: this.cfg.channel,
-                position
+        await new Promise((res, rej) => {
+            if (this.setPositionCursor !== undefined) {
+                clearTimeout(this.setPositionCursor[0]);
+                this.setPositionCursor[1](undefined);
+                this.setPositionCursor = undefined;
             }
-        })
+
+            let timeout = setTimeout(() => {
+                this.rpc.send({
+                    set: {
+                        channel: this.cfg.channel,
+                        position
+                    }
+                }).then(res).catch(rej)
+            }, 50);
+            this.setPositionCursor = [timeout, res];
+        });
     }
 
+    private setTiltCursor?: [NodeJS.Timeout, (_: void) => void] = undefined;
+
     private async setTilt(tilt: number) {
-        await this.rpc.send({
-            set: {
-                channel: this.cfg.channel,
-                tilt
+        await new Promise((res, rej) => {
+            if (this.setTiltCursor !== undefined) {
+                clearTimeout(this.setTiltCursor[0]);
+                this.setTiltCursor[1](undefined);
+                this.setTiltCursor = undefined;
             }
-        })
+
+            let timeout = setTimeout(() => {
+                this.rpc.send({
+                    set: {
+                        channel: this.cfg.channel,
+                        tilt
+                    }
+                }).then(res).catch(rej)
+            }, 50);
+            this.setTiltCursor = [timeout, res];
+        });
     }
+
+    private stateRequested: boolean = false;
 
     private async getState(): Promise<WindowDressingStatePair> {
         let handler = new Promise<WindowDressingStatePair>((res, rej) => {
@@ -165,6 +193,7 @@ export class WindowDressing {
 
             const update = (packet: IncomingRpcPacket) => {
                 if ("position" in packet && packet.position.channel === this.cfg.channel) {
+                    this.stateRequested = false;
                     res({
                         current: packet.position.current,
                         desired: packet.position.desired
@@ -178,7 +207,10 @@ export class WindowDressing {
             this.rpc.subscribe(update);
         })
 
-        await this.rpc.send({get: {channel: this.cfg.channel}});
+        if (!this.stateRequested) {
+            this.stateRequested = true;
+            await this.rpc.send({get: {channel: this.cfg.channel}});
+        }
         return await handler;
     }
 }
