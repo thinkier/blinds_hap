@@ -40,7 +40,7 @@ export class WindowDressing {
         let pendingPackets = 0;
         setInterval(() => {
             if (pendingPackets++ > 5) {
-                this.rpc.reset();
+                pendingPackets = 0;
             }
             this.rpc.send({
                 "get": {
