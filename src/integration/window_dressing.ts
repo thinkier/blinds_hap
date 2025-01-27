@@ -8,7 +8,6 @@ import {
     Service
 } from "hap-nodejs";
 import {WindowDressingState, WindowDressingStatePair} from "../model/common";
-import {IncomingRpcPacket} from "../model/rpc";
 import {RpcHandle} from "../comms/rpc";
 import {getHapHostName} from "./bridge";
 
@@ -19,7 +18,9 @@ export class WindowDressing {
     protected position: WindowDressingStatePair;
 
     public constructor(cfg: WindowDressingInstanceConfig, rpc: RpcHandle, init?: WindowDressingState) {
-        this.accessory = new Accessory(`${getHapHostName()} ${cfg.channel}`, cfg.uuid);
+        const variant = cfg.full_tilt_steps === undefined ? "Roller" : "Venetian";
+
+        this.accessory = new Accessory(`${getHapHostName()} ${variant} ${cfg.channel}`, cfg.uuid);
         this.cfg = cfg;
         this.rpc = rpc;
 
