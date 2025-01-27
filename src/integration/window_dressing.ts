@@ -78,8 +78,12 @@ export class WindowDressing {
         state.on(CharacteristicEventTypes.SET, (value: CharacteristicValue, cb: CharacteristicSetCallback) => {
             if (value) {
                 this.rpc.send({"home": {channel: this.cfg.channel}})
-                    .then(() => state.sendEventNotification(false))
                     .then(() => cb())
+                    .then(() => state.sendEventNotification(false))
+                    .then(() => this.accessory
+                        .getService(`Blinds ${this.cfg.channel}`)
+                        .getCharacteristic(Characteristic.PositionState)
+                        .updateValue(Characteristic.PositionState.INCREASING))
                     .catch(err => cb(err));
             } else {
                 cb();
