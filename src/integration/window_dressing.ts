@@ -77,6 +77,7 @@ export class WindowDressing {
         state.on(CharacteristicEventTypes.SET, (value: CharacteristicValue, cb: CharacteristicSetCallback) => {
             if (value) {
                 this.rpc.send({"home": {channel: this.cfg.channel}})
+                    .then(() => state.sendEventNotification(false))
                     .then(() => cb())
                     .catch(err => cb(err));
             } else {
