@@ -1,6 +1,6 @@
 instances:
   - uuid: 01b12134-c703-435a-bd3a-a443f5fd5e65
     channel: 0
-    full_cycle_steps: 78000
-    full_tilt_steps: 1800
+    full_cycle_steps: 77500
+    full_tilt_steps: 2500
     stallguard_threshold: 100
