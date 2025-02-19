@@ -28,8 +28,8 @@ export class WindowDressing {
             this.rpc.send({
                 "setup": {
                     channel: this.cfg.channel,
-                    // Default to fully open
-                    init: init ?? {position: 100, tilt: 0},
+                    // Default to fully closed
+                    init: init ?? {position: 0, tilt: 90},
                     full_cycle_steps: this.cfg.full_cycle_steps,
                     reverse: this.cfg.reverse,
                     full_tilt_steps: this.cfg.full_tilt_steps,
