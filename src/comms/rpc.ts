@@ -10,12 +10,13 @@ export class RpcHandle {
         this.port = port;
         let buf = Buffer.alloc(0);
 
-        let debug = require("debug")("BlindsHAP:Proto:IncomingRpcPacket");
+        let debug = require("debug")("BlindsHAP:Proto:Incoming:RpcPacket");
         port.on("data", (data: Buffer) => {
             // Concatenate new data onto existing buffer
             buf = Buffer.concat([buf, data]);
 
             let len = data.indexOf("\n");
+            require("debug")("BlindsHAP:Proto:Incoming:Raw")(`Len is ${len}`);
 
             if (len >= 0) {
                 // Extract the json
@@ -38,7 +39,7 @@ export class RpcHandle {
     }
 
     async send(packet: OutgoingRpcPacket): Promise<void> {
-        let debug = require("debug")("BlindsHAP:Proto:OutgoingRpcPacket");
+        let debug = require("debug")("BlindsHAP:Proto:Outgoing:RpcPacket");
         debug(packet);
 
         let str = JSON.stringify(packet);
