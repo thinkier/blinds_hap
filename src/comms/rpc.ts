@@ -15,8 +15,7 @@ export class RpcHandle {
             // Concatenate new data onto existing buffer
             buf = Buffer.concat([buf, data]);
 
-            let len = data.indexOf("\n");
-            require("debug")("BlindsHAP:Proto:Incoming:Raw")(`Len is ${len}`);
+            let len = buf.indexOf("\n");
 
             if (len >= 0) {
                 // Extract the json
