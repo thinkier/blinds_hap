@@ -10,10 +10,16 @@ export class RpcHandle {
         this.port = port;
         let buf = Buffer.alloc(0);
 
-        let debug = require("debug")("BlindsHAP:IncomingRpcPacket");
+        let debug = require("debug")("BlindsHAP:Proto:IncomingRpcPacket");
         port.on("data", (data: Buffer) => {
             // Concatenate new data onto existing buffer
             buf = Buffer.concat([buf, data]);
+
+            let nullBytePos = data.indexOf(0);
+            if (nullBytePos >= 0) {
+                require("debug")("BlindsHAP:Session")("Read a null byte, purging everything before that...");
+                buf = buf.subarray(nullBytePos + 1);
+            }
 
             let len = buf.readUint8();
             while (buf.length > len) {
@@ -36,7 +42,7 @@ export class RpcHandle {
     }
 
     async send(packet: OutgoingRpcPacket): Promise<void> {
-        let debug = require("debug")("BlindsHAP:OutgoingRpcPacket");
+        let debug = require("debug")("BlindsHAP:Proto:OutgoingRpcPacket");
         debug(packet);
 
         let str = JSON.stringify(packet);
