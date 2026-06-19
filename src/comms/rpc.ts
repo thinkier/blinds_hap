@@ -28,7 +28,8 @@ export class RpcHandle {
                         sub(packet);
                     }
                 } catch (e) {
-                    require("debug")("BlindsHAP:Proto:Incoming")("Failed to read packet");
+                    debug(str);
+                    require("debug")("BlindsHAP:Proto:Incoming")(`Failed to read packet: ${e}`);
                 }
                 // Cleanup the buffer & prepare for next iteration0
                 buf = buf.subarray(len + 1);
