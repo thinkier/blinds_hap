@@ -15,28 +15,32 @@ export class RpcHandle {
             // Concatenate new data onto existing buffer
             buf = Buffer.concat([buf, data]);
 
-            let nullBytePos = data.indexOf(0);
-            if (nullBytePos >= 0) {
-                require("debug")("BlindsHAP:Session")("Read a null byte, purging everything before that...");
-                buf = buf.subarray(nullBytePos + 1);
-            }
+            let len = data.indexOf("\n");
 
-            let len = buf.readUint8();
-            while (buf.length > len) {
+            if (len >= 0) {
                 // Extract the json
-                let str = buf.toString("ascii", 1, len + 1);
-                // Emit the content
-                let packet = JSON.parse(str);
-                debug(packet);
-                for (let sub of this.subscribers) {
-                    sub(packet);
+                let str = buf.toString("ascii", 0, len);
+                try {
+                    // Emit the content
+                    let packet = JSON.parse(str);
+                    debug(packet);
+                    for (let sub of this.subscribers) {
+                        sub(packet);
+                    }
+                } catch (e) {
+                    require("debug")("BlindsHAP:Proto:Incoming")("Failed to read packet, draining buffer and raising null byte");
+                    buf = Buffer.alloc(0);
+
+                    this.port.write(Uint8Array.from([0]), (err) => {
+                        if (err) {
+                            require("debug")("BlindsHAP:Proto:Outgoing")(err);
+
+                            process.exit(2);
+                        }
+                    });
                 }
                 // Cleanup the buffer & prepare for next iteration0
                 buf = buf.subarray(len + 1);
-                if (buf.length === 0) {
-                    break;
-                }
-                len = buf.readUint8();
             }
         });
     }
@@ -46,14 +50,14 @@ export class RpcHandle {
         debug(packet);
 
         let str = JSON.stringify(packet);
-        let buf = Buffer.alloc(str.length + 1);
+        let buf = Buffer.alloc(str.length + 1, "\n", "ascii");
 
-        buf.writeUint8(str.length);
-        buf.write(str, 1, "ascii");
+        buf.write(str);
 
         return new Promise((res, rej) => {
             this.port.write(buf, (err) => {
                 if (err) {
+                    require("debug")("BlindsHAP:Proto:Outgoing")(err);
                     rej(err)
                 } else {
                     res(undefined);
