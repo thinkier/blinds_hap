@@ -28,16 +28,8 @@ export class RpcHandle {
                         sub(packet);
                     }
                 } catch (e) {
-                    require("debug")("BlindsHAP:Proto:Incoming")("Failed to read packet, draining buffer and raising null byte");
+                    require("debug")("BlindsHAP:Proto:Incoming")("Failed to read packet, draining buffer");
                     buf = Buffer.alloc(0);
-
-                    this.port.write(Uint8Array.from([0]), (err) => {
-                        if (err) {
-                            require("debug")("BlindsHAP:Proto:Outgoing")(err);
-
-                            process.exit(2);
-                        }
-                    });
                 }
                 // Cleanup the buffer & prepare for next iteration0
                 buf = buf.subarray(len + 1);
