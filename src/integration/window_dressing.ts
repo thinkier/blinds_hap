@@ -53,7 +53,7 @@ export class WindowDressing {
             } else if ("position" in incoming && incoming.position.channel === this.cfg.channel) {
                 this.position = incoming.position;
 
-                if(incoming.position.notify) {
+                if (incoming.position.notify) {
                     this.notifyAccessory();
                 }
             }
@@ -95,7 +95,22 @@ export class WindowDressing {
     }
 
     protected notifyAccessory() {
-        // TODO
+        let name = `Blinds ${this.cfg.channel}`;
+        let windowCovering = this.accessory.getService(name);
+
+        {
+            windowCovering
+                .getCharacteristic(Characteristic.CurrentPosition)
+                .updateValue(this.position.current.position);
+
+            if (this.cfg.full_tilt_steps !== undefined) {
+                windowCovering
+                    .getCharacteristic(Characteristic.CurrentHorizontalTiltAngle)
+                    .updateValue(this.position.current.tilt);
+            }
+        }
+
+        require("debug")("BlindsHAP:WindowDressing")(`Pushing new position data for ${name}`);
     }
 
     protected addCovering() {
