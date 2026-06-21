@@ -39,15 +39,14 @@ export class WindowDressing {
             require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Channel ${this.cfg.channel} had been setup`);
         };
 
-        require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Channel ${this.cfg.channel} had constructed. Listening for state...`);
+        require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Channel ${this.cfg.channel} had constructed. Requesting state...`);
+        this.rpc.send({
+            "get": {
+                channel: this.cfg.channel
+            }
+        });
+
         let initState = false;
-        setInterval(() => {
-            this.rpc.send({
-                "get": {
-                    channel: this.cfg.channel
-                }
-            });
-        }, 2000);
         this.rpc.subscribe(incoming => {
             if ("ready" in incoming) {
                 setupChannel();
@@ -66,6 +65,14 @@ export class WindowDressing {
                 }
             }
         });
+
+        setInterval(() => {
+            this.rpc.send({
+                "get": {
+                    channel: this.cfg.channel
+                }
+            });
+        }, 2000);
     }
 
     public setupAccessory(): Accessory {
