@@ -36,8 +36,11 @@ export class WindowDressing {
                     full_tilt_steps: this.cfg.full_tilt_steps,
                 }
             });
+            require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Channel ${this.cfg.channel} had been setup`);
         };
 
+        require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Channel ${this.cfg.channel} had constructed. Listening for state...`);
+        let initState = false;
         setInterval(() => {
             this.rpc.send({
                 "get": {
@@ -55,6 +58,11 @@ export class WindowDressing {
 
                 if (incoming.position.notify) {
                     this.notifyAccessory();
+                }
+
+                if (!initState) {
+                    initState = true;
+                    require("debug")("BlindsHAP:WindowDressing:SetupChannel")(`Received initial state for channel ${this.cfg.channel}`);
                 }
             }
         });
@@ -110,7 +118,7 @@ export class WindowDressing {
             }
         }
 
-        require("debug")("BlindsHAP:WindowDressing")(`Pushing new position data for ${name}`);
+        require("debug")("BlindsHAP:WindowDressing:Notify")(`Pushing new position data for ${name}`);
     }
 
     protected addCovering() {
