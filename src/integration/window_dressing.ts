@@ -24,25 +24,21 @@ export class WindowDressing {
         this.cfg = cfg;
         this.rpc = rpc;
 
-        const setup = () => {
-            this.rpc.send({
+        const setupChannel = async () => {
+            let curpos = this?.position?.current ?? init;
+
+            await this.rpc.send({
                 "setup": {
                     channel: this.cfg.channel,
-                    // Default to fully closed
-                    init: init ?? {position: 0, tilt: 90},
+                    init: curpos,
                     full_cycle_steps: this.cfg.full_cycle_steps,
                     reverse: this.cfg.reverse,
                     full_tilt_steps: this.cfg.full_tilt_steps,
                 }
             });
         };
-        setup();
 
-        let pendingPackets = 0;
         setInterval(() => {
-            if (pendingPackets++ > 5) {
-                pendingPackets = 0;
-            }
             this.rpc.send({
                 "get": {
                     channel: this.cfg.channel
@@ -51,15 +47,20 @@ export class WindowDressing {
         }, 2000);
         this.rpc.subscribe(incoming => {
             if ("ready" in incoming) {
-                setup();
+                setupChannel();
+            } else if ("absent" in incoming && incoming.absent.channel === this.cfg.channel) {
+                setupChannel();
             } else if ("position" in incoming && incoming.position.channel === this.cfg.channel) {
-                pendingPackets--;
                 this.position = incoming.position;
+
+                if(incoming.position.notify) {
+                    this.notifyAccessory();
+                }
             }
         });
     }
 
-    public setup(): Accessory {
+    public setupAccessory(): Accessory {
         this.addCovering();
         if (this.cfg.stallguard_threshold !== undefined) {
             this.addHomingButton();
@@ -91,6 +92,10 @@ export class WindowDressing {
         });
 
         this.accessory.addService(resetButton);
+    }
+
+    protected notifyAccessory() {
+        // TODO
     }
 
     protected addCovering() {

@@ -1,3 +1,7 @@
+export interface Notifiable {
+    notify?: boolean
+}
+
 export interface WindowDressingState {
     position: number,
     tilt: number

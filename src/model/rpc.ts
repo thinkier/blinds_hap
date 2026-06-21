@@ -1,10 +1,14 @@
-import {ChannelBound, WindowDressingInstance, WindowDressingState, WindowDressingStatePair} from "./common";
+import {ChannelBound, Notifiable, WindowDressingInstance, WindowDressingState, WindowDressingStatePair} from "./common";
 
 
 export type IncomingRpcPacket = {
-    position: ChannelBound & WindowDressingStatePair
+    position: ChannelBound & Notifiable & WindowDressingStatePair
 } | {
     ready: {}
+} | {
+    absent: {
+        channel: number
+    }
 } | {
     stall_guard_result: ChannelBound & {
         sg_result: number

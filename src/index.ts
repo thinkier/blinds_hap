@@ -19,7 +19,7 @@ const main = async () => {
     const bridge = createBridge(hk);
 
     for (let cfg of accessories.instances) {
-        bridge.addBridgedAccessory(new WindowDressing(cfg, rpc).setup());
+        bridge.addBridgedAccessory(new WindowDressing(cfg, rpc, {position: 0, tilt: 90}).setupAccessory());
     }
 
     await bridge.publish({...hk, category: Categories.WINDOW_COVERING});
