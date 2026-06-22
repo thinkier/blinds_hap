@@ -77,9 +77,9 @@ export class WindowDressing {
 
     public setupAccessory(): Accessory {
         this.addCovering();
-        if (this.cfg.stallguard_threshold !== undefined) {
-            this.addHomingButton();
-        }
+        // if (this.cfg.stallguard_threshold !== undefined) {
+        //     this.addHomingButton();
+        // }
 
         return this.accessory;
     }
